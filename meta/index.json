@@ -1,0 +1,10 @@
+{
+  "apps": [
+    {
+      "id": "activity_launcher",
+      "name": "액티비티 런처",
+      "desc": "출처: Dr-Sauce (ActivityLauncher)",
+      "icon": "/meta/icons/activitylauncher.png"
+    },
+  ]
+}
