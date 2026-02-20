@@ -1,0 +1,40 @@
+name: Hash APK and update meta
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "apk/**/*.apk"
+
+permissions:
+  contents: write
+
+jobs:
+  update-meta:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install --no-input --upgrade pip
+
+      - name: Update sha256 in meta jsons
+        run: python .github/scripts/update_sha256.py
+
+      - name: Commit changes (if any)
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "fliptools-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add meta/apps/*.json
+          git commit -m "chore(meta): update sha256"
+          git push
