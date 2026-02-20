@@ -1,9 +1,10 @@
 {
   "apps": [
     {
-      "id": "activity_launcher",
-      "name": "액티비티 런처",
-      "desc": "Activity Launcher"
+      "id":"activity_launcher",
+      "name":"액티비티 런처",
+      "desc":"Activity Launcher",
+      "icon":"/meta/icons/activity_launcher.png"
     }
   ]
 }
