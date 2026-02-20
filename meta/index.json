@@ -5,6 +5,12 @@
       "name":"액티비티 런처",
       "desc":"Activity Launcher",
       "icon":"/meta/icons/activity_launcher.png"
+    },
+    {
+      "id":"youtube_tv",
+      "name":"안드로이드 TV 유튜브",
+      "desc":"Android TV Youtube",
+      "icon":"/meta/icons/youtube_tv.png"
     }
   ]
 }
