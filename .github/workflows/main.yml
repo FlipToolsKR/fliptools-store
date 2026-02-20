@@ -1,10 +1,11 @@
-name: Hash APK and update meta
+name: FlipTools Store Automation
 
 on:
   push:
     branches: [ "main" ]
     paths:
       - "apk/**/*.apk"
+      - "meta/apps/*.json"
 
 permissions:
   contents: write
@@ -13,28 +14,97 @@ jobs:
   update-meta:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install deps
-        run: pip install --no-input --upgrade pip
+      - name: Update sha256 in meta
+        run: |
+          python - << 'PY'
+          import hashlib, json
+          from pathlib import Path
 
-      - name: Update sha256 in meta jsons
-        run: python .github/scripts/update_sha256.py
+          APK_ROOT = Path("apk")
+          META_APPS = Path("meta/apps")
 
-      - name: Commit changes (if any)
+          def sha256_file(path: Path) -> str:
+            h = hashlib.sha256()
+            with path.open("rb") as f:
+              for chunk in iter(lambda: f.read(1024*1024), b""):
+                h.update(chunk)
+            return h.hexdigest()
+
+          def load_json(p: Path):
+            return json.loads(p.read_text(encoding="utf-8"))
+
+          def save_json(p: Path, data):
+            p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+          any_changed = False
+
+          # apk/<app>/<ver>.apk 순회
+          for apk_path in APK_ROOT.glob("*/*.apk"):
+            app = apk_path.parent.name
+            ver = apk_path.stem
+            meta_path = META_APPS / f"{app}.json"
+
+            if not meta_path.exists():
+              print(f"[skip] meta missing: {meta_path}")
+              continue
+
+            meta = load_json(meta_path)
+            versions = meta.get("versions")
+            if not isinstance(versions, list):
+              print(f"[skip] invalid versions list in: {meta_path}")
+              continue
+
+            digest = sha256_file(apk_path)
+
+            file_changed = False
+            found = False
+
+            for item in versions:
+              if isinstance(item, dict) and item.get("version") == ver:
+                found = True
+                if item.get("sha256") != digest:
+                  item["sha256"] = digest
+                  file_changed = True
+
+            # ✅ (옵션) 버전 엔트리가 meta에 없으면 자동으로 추가
+            if not found:
+              versions.insert(0, {
+                "version": ver,
+                "published": "",
+                "changelog": "",
+                "apk": f"/apk/{app}/{ver}.apk",
+                "sha256": digest
+              })
+              # latest도 없거나 더 최신으로 쓰고 싶으면 여기서 갱신 가능(원하면 해줌)
+              file_changed = True
+
+            if file_changed:
+              save_json(meta_path, meta)
+              any_changed = True
+              print(f"[ok] updated: {app} {ver}")
+            else:
+              print(f"[noop] already ok: {app} {ver}")
+
+          if not any_changed:
+            print("No meta changes")
+          PY
+
+      - name: Commit changes
         run: |
           if git diff --quiet; then
-            echo "No changes to commit."
+            echo "No changes to commit"
             exit 0
           fi
           git config user.name "fliptools-bot"
           git config user.email "actions@users.noreply.github.com"
           git add meta/apps/*.json
-          git commit -m "chore(meta): update sha256"
+          git commit -m "auto: update sha256"
           git push
