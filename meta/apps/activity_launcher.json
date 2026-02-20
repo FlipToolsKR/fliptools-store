@@ -1,0 +1,14 @@
+{
+  "id": "activity_launcher",
+  "name": "액티비티 런처",
+  "latest": "1.14.6",
+  "versions": [
+    {
+      "version": "1.14.6",
+      "published": "2023-07-27",
+      "changelog": "Activity Launcher 1.14.6",
+      "apk": "/apk/activity_launcher/1.14.6.apk",
+      "sha256": ""
+    }
+  ]
+}
