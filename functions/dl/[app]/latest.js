@@ -2,7 +2,7 @@ export async function onRequestGet({ params }) {
   const app = params.app;
 
   const metaUrl =
-    "https://flipstore-web.pages.dev/meta/apps/" +
+    "https://github.com/FlipToolsKR/fliptools-files/blob/main/meta/apps/" +
     encodeURIComponent(app) + ".json";
 
   const m = await fetch(metaUrl);

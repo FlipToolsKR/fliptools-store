@@ -3,7 +3,7 @@ export async function onRequestGet({ params }) {
 
   // app meta에서 latest 버전 읽기
   const metaUrl =
-    "https://flipstore-web.pages.dev/meta/apps/" +
+    "https://github.com/FlipToolsKR/fliptools-files/blob/main/meta/apps/" +
     encodeURIComponent(app) + ".json";
 
   const m = await fetch(metaUrl);
