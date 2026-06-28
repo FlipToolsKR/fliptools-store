@@ -381,7 +381,8 @@ async function load(){
       "latest: " + (data.latest || "-");
 
     latestBtn.href =
-      `/apk/${id}/latest`;
+      data.versions?.[0]?.apk ||
+      `/apk/${id}/${data.latest}.apk`;
 
     setIcon(
       data.icon ||
