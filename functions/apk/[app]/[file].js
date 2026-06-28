@@ -7,7 +7,7 @@ export async function onRequestGet({ params }) {
 
   // upstream: fliptools-store repo의 apk 폴더를 raw로
   const upstream =
-    "https://flipstore-web.pages.dev/apk/" +
+    "https://github.com/FlipToolsKR/fliptools-files/apk/" +
     encodeURIComponent(app) + "/" + encodeURIComponent(file);
 
   const r = await fetch(upstream);

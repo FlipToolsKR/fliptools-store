@@ -15,7 +15,7 @@ export async function onRequestGet({ params }) {
 
   const file = latest + ".apk";
   const upstream =
-    "https://flipstore-web.pages.dev/apk/" +
+    "https://github.com/FlipToolsKR/fliptools-files/apk/" +
     encodeURIComponent(app) + "/" + file;
 
   const r = await fetch(upstream);

@@ -13,7 +13,7 @@ export async function onRequestGet({ params }) {
   if (!latest) return new Response("no latest", { status: 404 });
 
   // ⭐ 여기서 릴리즈 URL로 바로 보내기
-  const url = "https://flipstore-web.pages.dev/apk" +
+  const url = "https://github.com/FlipToolsKR/fliptools-files/apk" +
               encodeURIComponent(app + "/" + latest + ".apk");
 
   return new Response(null, { status: 302, headers: { Location: url } });
