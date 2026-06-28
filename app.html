@@ -3,99 +3,49 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>App Detail</title>
+<title>FlipStore</title>
 
 <style>
 
 *{
   box-sizing:border-box;
+  font-family:system-ui,sans-serif;
 }
 
 body{
   margin:0;
-  background:#f8fafc;
-  color:#111827;
-  font-family:system-ui,sans-serif;
+  background:#f6f8fc;
 }
 
-/* header */
 .header{
   position:sticky;
   top:0;
-  z-index:100;
-  background:rgba(255,255,255,.9);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid #e5e7eb;
-  padding:14px 22px;
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
-
-.logo{
-  width:44px;
-  height:44px;
-}
-
-.logo img{
-  width:100%;
-  height:100%;
-  border-radius:14px;
-}
-
-h1{
-  margin:0;
-  font-size:22px;
+  background:white;
+  padding:14px 18px;
   font-weight:800;
+  border-bottom:1px solid #e5e7eb;
 }
 
-/* container */
 .container{
   max-width:900px;
   margin:auto;
-  padding:28px;
+  padding:18px;
 }
 
-/* app hero */
-.hero{
-  background:linear-gradient(135deg,#16a34a,#22c55e);
-  color:white;
-  border-radius:32px;
-  padding:32px;
-  margin-bottom:22px;
-}
-
-.hero h2{
-  margin:0;
-  font-size:32px;
-}
-
-.hero p{
-  margin-top:10px;
-  opacity:.9;
-}
-
-/* app info card */
 .card{
   background:white;
-  border-radius:28px;
-  padding:22px;
+  border-radius:24px;
+  padding:18px;
   box-shadow:0 3px 12px rgba(0,0,0,.06);
-}
-
-.row{
-  display:flex;
-  gap:16px;
-  align-items:flex-start;
+  margin-bottom:14px;
 }
 
 .icon{
-  width:96px;
-  height:96px;
-  border-radius:22px;
+  width:84px;
+  height:84px;
+  border-radius:20px;
   overflow:hidden;
   background:#eef2f7;
-  flex:0 0 auto;
 }
 
 .icon img{
@@ -104,180 +54,160 @@ h1{
   object-fit:cover;
 }
 
+.row{
+  display:flex;
+  gap:14px;
+}
+
 .name{
   font-size:22px;
   font-weight:800;
 }
 
 .desc{
-  margin-top:10px;
   color:#6b7280;
-  line-height:1.5;
-}
-
-.meta{
-  margin-top:14px;
-  font-size:14px;
-  color:#374151;
+  margin-top:6px;
 }
 
 .btns{
   display:flex;
   gap:10px;
-  margin-top:18px;
+  margin-top:14px;
 }
 
 .btn{
-  text-decoration:none;
-  padding:11px 18px;
+  padding:10px 14px;
   border-radius:999px;
-  font-size:14px;
+  text-decoration:none;
   font-weight:700;
+  font-size:13px;
 }
 
-.btn.primary{
+.primary{
   background:#16a34a;
   color:white;
 }
 
-.btn.secondary{
+.secondary{
   background:#eef2ff;
   color:#1e40af;
 }
 
-.footer{
-  text-align:center;
-  color:#6b7280;
-  padding:40px;
+.version{
+  padding:14px;
+  background:#f9fafb;
+  border-radius:16px;
+  margin-bottom:10px;
 }
 
-.error{
-  background:#fee2e2;
-  color:#991b1b;
-  padding:18px;
-  border-radius:16px;
+.ver-title{
+  font-weight:800;
+}
+
+.meta{
+  font-size:12px;
+  color:#6b7280;
+  margin-top:6px;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<div class="header">
-  <div class="logo">
-    <img src="/meta/icons/flipstore.png">
-  </div>
-  <h1>App Detail</h1>
-</div>
+<div class="header">App Detail</div>
 
 <div class="container">
 
-  <div id="content"></div>
+  <div class="card">
+    <div class="row">
+      <div class="icon" id="icon"></div>
 
-</div>
+      <div style="flex:1">
+        <div class="name" id="name"></div>
+        <div class="desc" id="desc"></div>
 
-<div class="footer">
-  FlipStore
+        <div class="btns">
+          <a class="btn primary" id="latestBtn" href="#">
+            다운로드
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:800">전체 버전</div>
+    <div id="versions"></div>
+  </div>
+
 </div>
 
 <script>
 
-const content = document.getElementById("content");
+const id = new URLSearchParams(location.search).get("id");
 
-function esc(s){
-  return String(s||"")
-  .replace(/&/g,"&amp;")
-  .replace(/</g,"&lt;")
-  .replace(/>/g,"&gt;");
-}
+const icon = document.getElementById("icon");
+const nameEl = document.getElementById("name");
+const descEl = document.getElementById("desc");
+const latestBtn = document.getElementById("latestBtn");
+const versionsEl = document.getElementById("versions");
 
-function getId(){
-  const p = new URLSearchParams(location.search);
-  return p.get("id");
-}
+fetch(`/meta/apps/${id}.json`)
+.then(r=>r.json())
+.then(data=>{
 
-function renderApp(a){
+  nameEl.textContent = data.name || id;
+  descEl.textContent = data.desc || "";
 
-  content.innerHTML = `
-    <div class="hero">
-      <h2>${esc(a.name || a.id)}</h2>
-      <p>${esc(a.desc || "설명이 없습니다.")}</p>
-    </div>
+  icon.innerHTML =
+    `<img src="${data.icon || "/meta/icons/"+id+".png"}">`;
 
-    <div class="card">
+  const versions = data.versions || [];
 
-      <div class="row">
+  // 최신 버전 = 마지막 요소
+  const latest = versions[versions.length - 1];
 
-        <div class="icon">
-          ${a.icon ? `<img src="${esc(a.icon)}">` : ""}
+  if(latest){
+    const latestApk =
+      latest.apk || `/apk/${id}/${latest.version}.apk`;
+
+    latestBtn.href = latestApk;
+  }
+
+  let html="";
+
+  versions.forEach(v=>{
+
+    const apk =
+      v.apk || `/apk/${id}/${v.version}.apk`;
+
+    html += `
+      <div class="version">
+
+        <div class="ver-title">
+          ${v.version}
         </div>
 
-        <div style="flex:1">
+        <div class="meta">
+          ${v.changelog || ""}
+        </div>
 
-          <div class="name">${esc(a.name || a.id)}</div>
-
-          <div class="desc">
-            ${esc(a.longDesc || a.desc || "상세 정보 없음")}
-          </div>
-
-          <div class="meta">
-            <div>앱 ID: ${esc(a.id)}</div>
-            ${a.version ? `<div>버전: ${esc(a.version)}</div>` : ""}
-            ${a.size ? `<div>크기: ${esc(a.size)}</div>` : ""}
-          </div>
-
-          <div class="btns">
-            <a class="btn primary"
-               href="/apk/${encodeURIComponent(a.id)}/latest.apk">
-              다운로드
-            </a>
-
-            <a class="btn secondary"
-               href="/">
-              목록으로
-            </a>
-          </div>
-
+        <div class="btns">
+          <a class="btn primary" href="${apk}">
+            다운로드
+          </a>
         </div>
 
       </div>
+    `;
 
-    </div>
-  `;
-}
+  });
 
-function renderError(){
-  content.innerHTML = `
-    <div class="error">
-      앱 정보를 찾을 수 없습니다.
-    </div>
-  `;
-}
+  versionsEl.innerHTML = html;
 
-async function load(){
-
-  const id = getId();
-  if(!id){
-    renderError();
-    return;
-  }
-
-  const r = await fetch(`/meta/index.json?t=${Date.now()}`);
-  const d = await r.json();
-
-  const apps = d.apps || [];
-  const app = apps.find(a => a.id === id);
-
-  if(!app){
-    renderError();
-    return;
-  }
-
-  renderApp(app);
-}
-
-load();
+});
 
 </script>
 
