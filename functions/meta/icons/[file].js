@@ -6,7 +6,7 @@ export async function onRequestGet({ params }) {
   }
 
   const upstream =
-    "https://fliptools-web.pages.dev/meta/icons/" +
+    "https://flipstore-web.pages.dev/meta/icons/" +
     encodeURIComponent(file);
 
   const r = await fetch(upstream);

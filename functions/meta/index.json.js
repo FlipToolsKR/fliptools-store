@@ -1,6 +1,6 @@
 export async function onRequestGet() {
   const upstream =
-    "https://fliptools-web.pages.dev/meta/index.json";
+    "https://flipstore-web.pages.dev/meta/index.json";
 
   const r = await fetch(upstream);
   if (!r.ok) return new Response("Upstream error", { status: 502 });

@@ -3,7 +3,7 @@ export async function onRequestGet({ params }) {
 
   // app meta에서 latest 버전 읽기
   const metaUrl =
-    "https://fliptools-web.pages.dev/meta/apps/" +
+    "https://flipstore-web.pages.dev/meta/apps/" +
     encodeURIComponent(app) + ".json";
 
   const m = await fetch(metaUrl);
@@ -15,7 +15,7 @@ export async function onRequestGet({ params }) {
 
   const file = latest + ".apk";
   const upstream =
-    "https://fliptools-web.pages.dev/apk/" +
+    "https://flipstore-web.pages.dev/apk/" +
     encodeURIComponent(app) + "/" + file;
 
   const r = await fetch(upstream);
