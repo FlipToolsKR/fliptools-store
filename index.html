@@ -1,0 +1,198 @@
+<script>
+  if (Math.min(screen.width, screen.height) <= 320) location.replace("m.html");
+</script>
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flip Store</title>
+
+<style>
+body{
+  margin:0;
+  background:#0f1115;
+  color:#e6e6e6;
+  font-family:system-ui, sans-serif;
+}
+
+.header{
+  padding:16px 20px;
+  border-bottom:1px solid #222;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.logo{
+  width:32px;height:32px;border-radius:10px;
+  background:#3b82f6;
+}
+
+h1{font-size:18px;margin:0;font-weight:700}
+
+.search{
+  margin-left:auto;
+}
+.search input{
+  background:#16181d;
+  border:1px solid #262a33;
+  color:white;
+  padding:8px 10px;
+  border-radius:8px;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:14px;
+}
+
+.card{
+  background:#16181d;
+  border:1px solid #262a33;
+  border-radius:14px;
+  padding:14px;
+}
+
+.row{
+  display:flex;
+  gap:12px;
+}
+
+.icon{
+  width:48px;height:48px;
+  border-radius:12px;
+  background:#222;
+  overflow:hidden;
+  flex:0 0 auto;
+}
+.icon img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.name{
+  font-weight:700;
+  font-size:15px;
+}
+
+.desc{
+  color:#aaa;
+  font-size:13px;
+  margin-top:4px;
+}
+
+.btns{
+  margin-top:10px;
+  display:flex;
+  gap:8px;
+}
+
+.btn{
+  background:#232730;
+  border:1px solid #333;
+  padding:6px 10px;
+  border-radius:8px;
+  text-decoration:none;
+  color:white;
+  font-size:12px;
+}
+
+.btn.primary{
+  background:#3b82f6;
+  border:none;
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"></div>
+  <h1>FlipTools Store</h1>
+
+  <div class="search">
+    <input id="q" placeholder="검색">
+  </div>
+</div>
+
+<div class="container">
+  <div id="grid" class="grid"></div>
+</div>
+
+<script>
+
+let apps=[];
+const grid=document.getElementById("grid");
+const q=document.getElementById("q");
+
+function card(a){
+
+  const iconHTML = a.icon
+    ? `<img src="${a.icon}">`
+    : "";
+
+  return `
+  <div class="card">
+    <div class="row">
+
+      <div class="icon">${iconHTML}</div>
+
+      <div style="flex:1">
+
+        <div class="name">${a.name||a.id}</div>
+        <div class="desc">${a.desc||""}</div>
+
+        <div class="btns">
+          <a class="btn primary" href="app.html?id=${a.id}">상세</a>
+          <a class="btn" href="/apk/${a.id}/latest">다운로드</a>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+  `;
+}
+
+function render(){
+
+  const s=q.value.toLowerCase();
+
+  grid.innerHTML=apps
+    .filter(a=>
+      !s ||
+      (a.name||"").toLowerCase().includes(s) ||
+      (a.id||"").toLowerCase().includes(s) ||
+      (a.desc||"").toLowerCase().includes(s)
+    )
+    .map(card)
+    .join("");
+}
+
+q.oninput=render;
+
+async function load(){
+
+  const r=await fetch(`/meta/index.json?t=${Date.now()}`);
+  const d=await r.json();
+
+  apps=d.apps||[];
+
+  render();
+}
+
+load();
+
+</script>
+
+</body>
+</html>

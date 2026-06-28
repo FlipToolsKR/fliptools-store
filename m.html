@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=240, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Flip Store</title>
+<style>
+  body{margin:0;background:#0f1115;color:#e6e6e6;font-family:system-ui,sans-serif}
+  .top{padding:8px;border-bottom:1px solid #222}
+  .title{font-size:14px;font-weight:800}
+  .sub{font-size:11px;color:#aaa;margin-top:2px}
+  .box{padding:8px}
+  input{
+    width:100%; box-sizing:border-box;
+    padding:7px 8px; border-radius:8px;
+    background:#16181d; border:1px solid #262a33; color:#fff;
+    font-size:12px;
+  }
+  .item{
+    margin-top:8px; padding:8px;
+    background:#16181d; border:1px solid #262a33; border-radius:10px;
+  }
+  .name{font-size:13px;font-weight:800}
+  .desc{font-size:11px;color:#aaa;margin-top:3px}
+  .btns{margin-top:7px; display:flex; gap:6px; flex-wrap:wrap}
+  a{
+    display:inline-block;
+    padding:6px 8px;
+    background:#232730; border:1px solid #333; border-radius:8px;
+    color:#fff; text-decoration:none; font-size:11px;
+  }
+  a.primary{background:#3b82f6;border:none}
+  .err{margin-top:10px;color:#ffb4b4;font-size:12px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="title">Flip Store</div>
+  </div>
+
+  <div class="box">
+    <input id="q" placeholder="검색(이름/설명/id)">
+    <div id="list"></div>
+    <div id="err" class="err"></div>
+  </div>
+
+<script>
+(function(){
+  var q = document.getElementById("q");
+  var list = document.getElementById("list");
+  var err = document.getElementById("err");
+  var apps = [];
+
+  var RAW_BASE = "https://fliptools-web.pages.dev/apk/";
+
+  function esc(s){
+    return String(s||"").replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  function mkRawLatestUrl(app){
+    var id = app.id || "";
+    var latest = app.latest || "";
+    // 최신버전 정보 없으면 상세로 유도
+    if(!id || !latest) return "";
+    return RAW_BASE + encodeURIComponent(id) + "/" + encodeURIComponent(latest) + ".apk";
+  }
+
+  function render(){
+    var term = (q.value||"").toLowerCase().trim();
+    var out = [];
+    for(var i=0;i<apps.length;i++){
+      var a = apps[i];
+      var id = a.id || "";
+      var name = a.name || id;
+      var desc = a.desc || "";
+      var ok = !term ||
+        id.toLowerCase().indexOf(term) >= 0 ||
+        name.toLowerCase().indexOf(term) >= 0 ||
+        desc.toLowerCase().indexOf(term) >= 0;
+
+      if(!ok) continue;
+
+      var icon = a.icon || ("/meta/icons/" + id + ".png");
+      var rawLatest = mkRawLatestUrl(a);
+
+      out.push(
+        '<div class="item">' +
+
+          '<div style="display:flex;gap:6px;align-items:center;">' +
+            '<img src="'+esc(icon)+'?t='+Date.now()+'" '+
+              'style="width:32px;height:32px;border-radius:6px;background:#222;flex:0 0 auto;">' +
+            '<div>' +
+              '<div class="name">'+esc(name)+'</div>' +
+              (desc ? '<div class="desc">'+esc(desc)+'</div>' : '') +
+            '</div>' +
+          '</div>' +
+
+          '<div class="btns">' +
+            (rawLatest
+              ? '<a class="primary" href="'+esc(rawLatest)+'">길게 눌러 저장</a>'
+              : '<a class="primary" href="m_app.html?id='+encodeURIComponent(id)+'">상세에서 받기</a>'
+            ) +
+            '<a href="m_app.html?id='+encodeURIComponent(id)+'">상세</a>' +
+          '</div>' +
+
+        '</div>'
+      );
+    }
+    list.innerHTML = out.join("") || '<div class="item"><div class="desc">앱이 없음</div></div>';
+  }
+
+  q.oninput = render;
+
+  function load(){
+    err.textContent = "";
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "/meta/index.json?t=" + Date.now(), true);
+    xhr.onreadystatechange = function(){
+      if(xhr.readyState !== 4) return;
+
+      if(xhr.status !== 200){
+        err.textContent = "로드 실패: /meta/index.json ("+xhr.status+")";
+        return;
+      }
+
+      try{
+        var data = JSON.parse(xhr.responseText);
+        apps = data.apps || [];
+        render();
+      }catch(e){
+        err.textContent = "JSON 파싱 실패: " + e;
+      }
+    };
+    xhr.send(null);
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>
