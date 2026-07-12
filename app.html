@@ -77,7 +77,7 @@ body{
 
 .btn{
   padding:10px 14px;
-  border-radius:999px;
+  border-radius:8px;
   text-decoration:none;
   font-weight:700;
   font-size:13px;
@@ -128,7 +128,7 @@ body{
         <div class="desc" id="desc"></div>
 
         <div class="btns">
-          <a class="btn primary" id="latestBtn" href="#">
+          <a class="btn primary" id="latestBtn" href="#" aria-label="Download latest APK">
             다운로드
           </a>
         </div>
@@ -145,70 +145,41 @@ body{
 </div>
 
 <script>
-
-const id = new URLSearchParams(location.search).get("id");
-
-const icon = document.getElementById("icon");
-const nameEl = document.getElementById("name");
-const descEl = document.getElementById("desc");
-const latestBtn = document.getElementById("latestBtn");
-const versionsEl = document.getElementById("versions");
-
-fetch(`/meta/apps/${id}.json`)
-.then(r=>r.json())
-.then(data=>{
-
-  nameEl.textContent = data.name || id;
-  descEl.textContent = data.desc || "";
-
-  icon.innerHTML =
-    `<img src="${data.icon || "/meta/icons/"+id+".png"}">`;
-
-  const versions = data.versions || [];
-
-  // 최신 버전 = 마지막 요소
-  const latest = versions[versions.length - 1];
-
-  if(latest){
-    const latestApk =
-      latest.apk || `/apk/${id}/${latest.version}.apk`;
-
-    latestBtn.href = latestApk;
-  }
-
-  let html="";
-
-  versions.forEach(v=>{
-
-    const apk =
-      v.apk || `/apk/${id}/${v.version}.apk`;
-
-    html += `
+(async () => {
+  const id = new URLSearchParams(location.search).get("id");
+  if (!id) { alert("앱 ID가 없습니다."); return; }
+  const iconEl = document.getElementById("icon");
+  const nameEl = document.getElementById("name");
+  const descEl = document.getElementById("desc");
+  const latestBtn = document.getElementById("latestBtn");
+  const versionsEl = document.getElementById("versions");
+  try {
+    const r = await fetch(`/meta/apps/${encodeURIComponent(id)}.json`);
+    if (!r.ok) throw new Error("앱 메타 정보를 찾을 수 없습니다.");
+    const data = await r.json();
+    nameEl.textContent = data.name || id;
+    descEl.textContent = data.desc || "";
+    iconEl.innerHTML = `<img src="${data.icon || "/meta/icons/"+id+".png"}" alt="앱 아이콘">`;
+    const versions = data.versions || [];
+    const latest = versions[versions.length - 1];
+    if (latest) {
+      const latestApk = latest.apk || `/apk/${id}/${latest.version}.apk`;
+      latestBtn.href = latestApk;
+      latestBtn.style.display = "inline-block";
+    } else { latestBtn.style.display = "none"; }
+    const html = versions.map(v => `
       <div class="version">
-
-        <div class="ver-title">
-          ${v.version}
-        </div>
-
-        <div class="meta">
-          ${v.changelog || ""}
-        </div>
-
-        <div class="btns">
-          <a class="btn primary" href="${apk}">
-            다운로드
-          </a>
-        </div>
-
-      </div>
-    `;
-
-  });
-
-  versionsEl.innerHTML = html;
-
-});
-
+        <div class="ver-title">${v.version}</div>
+        <div class="meta">${v.changelog || ""}</div>
+        <div class="btns"><a class="btn primary" href="${v.apk || `/apk/${id}/${v.version}.apk`}">다운로드</a></div>
+      </div>`).join("");
+    versionsEl.innerHTML = html;
+  } catch (e) {
+    console.error(e);
+    versionsEl.innerHTML = `<div class="meta">오류: ${e.message}</div>`;
+    latestBtn.style.display = "none";
+  }
+})();
 </script>
 
 </body>

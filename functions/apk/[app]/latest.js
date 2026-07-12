@@ -14,8 +14,8 @@ export async function onRequestGet({ params, request }) {
     return new Response("Invalid app meta: missing latest", { status: 500 });
   }
 
-  return Response.redirect(
-    `${base}/apk/${encodeURIComponent(app)}/${encodeURIComponent(latest)}.apk`,
-    302
-  );
+  return new Response(null, {
+    status: 302,
+    headers: { Location: `${base}/apk/${encodeURIComponent(app)}/${encodeURIComponent(latest)}.apk` }
+  });
 }
