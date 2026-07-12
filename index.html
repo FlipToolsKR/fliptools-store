@@ -8,9 +8,18 @@
 body{margin:0;padding:20px;font-family:sans-serif;background:#fafafa;color:#111;}
 h1{font-size:1.8rem;margin-bottom:1rem;}
 ul{list-style:none;padding:0;}
-li{margin-bottom:1rem;padding:12px;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:space-between;}
+li{margin-bottom:1rem;padding:12px;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.app-item{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.icon-img{width:36px;height:36px;border-radius:6px;object-fit:cover;}
+.info{flex:1;min-width:120px;}
 .app-name{font-weight:600;}
-.download{background:#28a745;color:#fff;padding:6px 12px;border:none;border-radius:4px;text-decoration:none;}
+.app-desc{font-size:0.9rem;color:#555;}
+.btn{padding:6px 12px;border:none;border-radius:4px;text-decoration:none;font-size:0.9rem;cursor:pointer;}
+.details{background:#0369a1;color:#fff;margin-right:8px;}
+.download{background:#28a745;color:#fff;}
+.version-list{margin-top:8px;}
+.version-item{margin-top:4px;}
+.version-btn{background:#6b7280;color:#fff;}
 </style>
 </head>
 <body>
@@ -26,7 +35,19 @@ async function load(){
 }
 function render(){
   const list=document.getElementById('appList');
-  list.innerHTML=apps.map(a=>`<li><span class="app-name">${a.name||a.id}</span><a class="download" href="/apk/${encodeURIComponent(a.id)}/${encodeURIComponent(a.latest)}.apk">다운로드</a></li>`).join('');
+list.innerHTML=apps.map(a=>`<li>
+  <div class="app-item">
+    <img class="icon-img" src="${a.icon||'/meta/icons/'+a.id+'.png'}" alt="${a.name||a.id} 아이콘">
+    <div class="info">
+      <div class="app-name">${a.name||a.id}</div>
+      <div class="app-desc">${a.desc||''}</div>
+    </div>
+    <a class="btn details" href="app.html?id=${encodeURIComponent(a.id)}">상세</a>
+    <a class="btn download" href="/apk/${encodeURIComponent(a.id)}/${encodeURIComponent(a.latest)}.apk">다운로드</a>
+    <button class="btn version-btn" onclick="toggleVersions('${a.id}', this)">버전</button>
+    <div class="version-list" style="display:none;"></div>
+  </div>
+</li>`).join('');
 }
 load();
 </script>
