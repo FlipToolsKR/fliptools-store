@@ -133,7 +133,12 @@ body{
 <script>
 (async()=>{
   const fetchBoth=async url=>{try{const r=await fetch(url);if(!r.ok)return[];const d=await r.json();return d.apps||[];}catch{return[];}};
-  const basePath=location.pathname.includes('LG')||location.pathname.includes('fliptools-files')?'/LG':'';
+  let basePath='';
+if(location.pathname.includes('/LG/')||location.pathname.includes('/fliptools-files/')){
+  basePath='';
+}else if(location.pathname.includes('LG')||location.pathname.includes('fliptools-files')){
+  basePath='/LG';
+}
   const storeApps=await fetchBoth(`${basePath}/meta/index.json`);
   const fileApps=await fetchBoth(`${basePath}/fliptools-files/meta/index.json`);
   const map=new Map();
