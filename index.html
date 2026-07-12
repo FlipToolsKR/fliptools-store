@@ -28,26 +28,56 @@ li{margin-bottom:1rem;padding:12px;background:#fff;border-radius:8px;box-shadow:
 <script>
 let apps=[];
 async function load(){
-  const r=await fetch('/meta/index.json');
-  const data=await r.json();
-  apps=data.apps||[];
+  // fetch apps from both store and files directories
+  const fetchBoth = async (url)=>{
+    try{ const r=await fetch(url); if(!r.ok) return []; const d=await r.json(); return d.apps||[]; }
+    catch{return [];}
+  };
+  const basePath = location.pathname.includes('LG') || location.pathname.includes('fliptools-files') ? '/LG' : '';
+  const storeApps = await fetchBoth(`${basePath}/meta/index.json`);
+  const fileApps = await fetchBoth(`${basePath}/fliptools-files/meta/index.json`);
+  // combine, deduplicate by id (store apps take precedence)
+  const map=new Map();
+  storeApps.forEach(a=>map.set(a.id,a));
+  fileApps.forEach(a=>{if(!map.has(a.id)) map.set(a.id,a);});
+  apps=Array.from(map.values());
   render();
 }
 function render(){
   const list=document.getElementById('appList');
-list.innerHTML=apps.map(a=>`<li>
-  <div class="app-item">
-    <img class="icon-img" src="${a.icon||'/meta/icons/'+a.id+'.png'}" alt="${a.name||a.id} 아이콘">
-    <div class="info">
-      <div class="app-name">${a.name||a.id}</div>
-      <div class="app-desc">${a.desc||''}</div>
+  list.innerHTML=apps.map(a=>`<li>
+    <div class="app-item">
+      <img class="icon-img" src="${a.icon||'/meta/icons/'+a.id+'.png'}" alt="${a.name||a.id} 아이콘">
+      <div class="info">
+        <div class="app-name">${a.name||a.id}</div>
+        <div class="app-desc">${a.desc||''}</div>
+      </div>
+      <a class="btn details" href="app.html?id=${encodeURIComponent(a.id)}">상세</a>
+      <a class="btn download" href="/apk/${encodeURIComponent(a.id)}/${encodeURIComponent(a.latest)}.apk">다운로드</a>
+      <button class="btn version-btn" onclick="toggleVersions('${a.id}', this)">버전</button>
+      <div class="version-list" style="display:none;"></div>
     </div>
-    <a class="btn details" href="app.html?id=${encodeURIComponent(a.id)}">상세</a>
-    <a class="btn download" href="/apk/${encodeURIComponent(a.id)}/${encodeURIComponent(a.latest)}.apk">다운로드</a>
-    <button class="btn version-btn" onclick="toggleVersions('${a.id}', this)">버전</button>
-    <div class="version-list" style="display:none;"></div>
-  </div>
-</li>`).join('');
+  </li>`).join('');
+}
+async function toggleVersions(id, btn){
+  const container=btn.nextElementSibling; // version-list div
+  if(container.style.display==='block'){
+    container.style.display='none';
+    return;
+  }
+  // try store meta first, then files meta
+  const fetchMeta = async (base)=>{
+    try{ const r=await fetch(`${base}/meta/apps/${encodeURIComponent(id)}.json`); if(!r.ok) return null; return await r.json(); }
+    catch{return null;}
+  };
+  let data = await fetchMeta(''); // store path relative
+  if(!data) data = await fetchMeta('../fliptools-files');
+  if(!data){ container.innerHTML='<div class="app-desc">버전 정보를 불러올 수 없습니다.</div>'; container.style.display='block'; return; }
+  const versions=data.versions||[];
+  if(versions.length===0){ container.innerHTML='<div class="app-desc">버전이 없습니다.</div>'; container.style.display='block'; return; }
+  const html=versions.map(v=>`<div class="version-item"><a class="btn version-btn" href="${v.apk||'/apk/'+id+'/'+v.version+'.apk'}">${v.version}</a></div>`).join('');
+  container.innerHTML=html;
+  container.style.display='block';
 }
 load();
 </script>
